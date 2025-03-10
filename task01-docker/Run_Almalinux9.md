@@ -2,7 +2,8 @@
 
 Make sure that Docker is correctly installed by following the instructions in the [Docker_Windows_Installation.md](https://github.com/filipponicolasi/CompPhysStud-PhD/blob/main/task01-docker/Docker_Windows_Installation.md) file in this repository.  
 
-Now, open the Windows terminal and type:
+## 1. Pull the AlmaLinux 9 Image  
+Open the Windows terminal and type:  
 ```cmd
 docker pull almalinux:9
 ```
@@ -16,19 +17,57 @@ docker.io/library/almalinux:9
 ```
 To verify the success of this process, open Docker Desktop and check the Images tab. You should see AlmaLinux 9 listed there.
 
-Note: Docker may be running in the background in Resource Server mode, so if you don't see the main window, click on the whale-like icon in the Windows taskbar (under hidden icons), usually located at the bottom right of the screen.
+Note: Docker may be running in background, so if you don't see the main window, click on the whale-like icon in the Windows taskbar (under hidden icons), usually located at the bottom right of the screen.
 
-Now start an Almalinux9 container typing on the windows terminal:
+## 2. Start an AlmaLinux 9 Container
+To start an AlmaLinux 9 container, type the following command in the Windows terminal:
 ```cmd
 docker run -it --name ContainerName almalinux:9 bash
 ```
-this command assigns the name *ContainerName* to a new  almalinux9 container and runs it. Now, we have an almalinux9 environment inside the Terminal. You should see in the terminal a message like `[root@23b25a9c8ba1 /]#`. 
+This command:
+* Assigns the name *ContainerName* to a new AlmaLinux 9 container
+* Launches the container in interactive mode (`-it`)
+* Runs the `bash` shell inside the container
 
-To exit the container insert the command
+Once inside the AlmaLinux 9 environment, your terminal prompt should look something like this:
+```charp
+[root@23b25a9c8ba1 /]#
+```
+To verify that you are inside the AlmaLinux 9 container, type:
+```cmd
+cat /etc/os-release
+```
+The output should resemble:
+```
+NAME="AlmaLinux"
+VERSION="9.5 (Teal Serval)"
+ID="almalinux"
+....
+....
+```
+
+## 3. Exiting and Managing Containers
+To exit the container, type:
 ```cmd
 exit
 ```
-To start the container use the previous assigned name inserting the command
+You can manage containers by their assigned *ContainerName*.
+* Access a running container:
 ```cmd
-start -i ContainerName
+docker exec -it ContainerName bash
 ```
+* Stop a running container:
+```cmd
+docker stop ContainerName
+```
+* Start a stopped container:
+```cmd
+docker start ContainerName
+```
+* List all containers (running and stopped):
+```cmd
+docker ps -a
+```
+Alternatively, you can view and manage containers in Docker Desktop under the Containers tab.
+
+Now you are ready to use your AlmaLinux 9 container!
