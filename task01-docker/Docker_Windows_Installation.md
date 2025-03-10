@@ -61,4 +61,4 @@ docker --version
 ```
 Before running Docker commands, make sure Docker Desktop is open and running. If you haven't launched it yet, the Docker Engine might not be active. Open Docker Desktop and ensure it is properly started.
 
-
+Now you are ready to use Docker!
