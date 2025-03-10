@@ -46,4 +46,11 @@ A window will open with a list of features. Find and check the box for "Windows 
 Wait a few seconds for the setup to complete, then restart your PC to apply the changes.
 
 ## 2. Docker Desktop Installation  
+Go to the [Docker Desktop installation page](https://docs.docker.com/desktop/setup/install/windows-install/) for Windows and download the **Docker Desktop Installer.exe** file by clicking on the *Docker Desktop for Windows - x86_64* icon. Then, run the `.exe` file.  
+
+The installer will start initializing, and after a few seconds, it will ask if you want to add a shortcut to the desktop. Click **OK**, and the installation process will begin unpacking files. This process can take a few minutes to complete.  
+
+Once finished, a success message will appear. Generally, this message prompts you to restart your PC, but if it does not occur, it is recommended to restart your PC manually.   
+
+
 
