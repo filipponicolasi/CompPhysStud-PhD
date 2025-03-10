@@ -1,4 +1,4 @@
-# How to Install Docker on Windows
+# How to Install Docker on Windows and run Almalinux9
 
 Since Docker is built on Linux kernel functionalities, which don’t exist on Windows, you need to set up a Linux environment on your Windows machine. This can be done using either [Hyper-V](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/hyper-v-overview?pivots=windows) or [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/about).
 
@@ -15,17 +15,13 @@ For further troubleshooting related to Docker installation on Windows, refer to 
 
 ## 1. WSL 2 Installation  
 
-Open the terminal by pressing `Win + R`, then typing `cmd` in the search window.  
-(Alternatively, you can open it directly by typing `cmd` in the Windows search bar.  
-In Italian, the terminal is referred to as **"Prompt dei comandi"**.)  
+Open the terminal by pressing `Win + R`, then typing `cmd` in the search window. (Alternatively, you can open it directly by typing `cmd` in the Windows search bar. In Italian, the terminal is referred to as **"Prompt dei comandi"**.) 
 
 You may already have WSL installed. To check, type the following command in the terminal:  
-
 ```cmd
 wsl
 ```
 If WSL is not installed, run:
-
 ```cmd
 wsl --install
 ```
@@ -46,11 +42,23 @@ A window will open with a list of features. Find and check the box for "Windows 
 Wait a few seconds for the setup to complete, then restart your PC to apply the changes.
 
 ## 2. Docker Desktop Installation  
+
 Go to the [Docker Desktop installation page](https://docs.docker.com/desktop/setup/install/windows-install/) for Windows and download the **Docker Desktop Installer.exe** file by clicking on the *Docker Desktop for Windows - x86_64* icon. Then, run the `.exe` file.  
 
 The installer will start initializing, and after a few seconds, it will ask if you want to add a shortcut to the desktop. Click **OK**, and the installation process will begin unpacking files. This process can take a few minutes to complete.  
 
-Once finished, a success message will appear. Generally, this message prompts you to restart your PC, but if it does not occur, it is recommended to restart your PC manually.   
+Once finished, a success message will appear. Generally, this message prompts you to restart your PC, but if it does not occur, it is recommended to restart your PC manually.  
 
+To verify if Docker Desktop was successfully installed, type the following command in the Windows terminal:  
+
+```cmd
+docker run hello-world
+```
+If Docker is correctly installed, you will see the message "Hello from Docker!". 
+You can also check the installed Docker version by typing:
+```cmd
+docker --version
+```
+Before running Docker commands, make sure Docker Desktop is open and running. If you haven't launched it yet, the Docker Engine might not be active. Open Docker Desktop and ensure it is properly started.
 
 
