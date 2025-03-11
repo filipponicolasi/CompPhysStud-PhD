@@ -9,4 +9,6 @@ The project is divided into two main files:
 1. **Docker_Windows_Installation.md** – A guide to installing Docker on Windows.  
 2. **AlmaLinux9_Container.md** – Instructions on creating and running an AlmaLinux 9 container using Docker.  
 
+In addition, there are guides for installing C and Python on AlmaLinux 9.  
+
   
