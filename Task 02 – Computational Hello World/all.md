@@ -40,7 +40,7 @@ print("Computation completed. Check 'vector_sum.txt' for results.")
 ```
 2) C code:
 
-
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -127,3 +127,4 @@ int main() {
     return 0;
 }
 
+```
