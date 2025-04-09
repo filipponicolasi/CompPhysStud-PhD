@@ -211,32 +211,104 @@ make
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_blas.h>
 
-int main(int argc, char *argv[]) {
-    // Similar config file parsing as before...
+#define MAX_LINE 256
 
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Uso: %s <config_file.cfg>\n", argv[0]);
+        return 1;
+    }
+
+    char file_x[100] = "", file_y[100] = "", prefix_output[100] = "";
+    int N = -1;
+    double a = 0.0;
+
+    FILE *fcfg = fopen(argv[1], "r");
+    if (!fcfg) {
+        printf("Errore apertura file di configurazione.\n");
+        return 1;
+    }
+
+    char riga[MAX_LINE];
+    while (fgets(riga, MAX_LINE, fcfg)) {
+        riga[strcspn(riga, "\n")] = '\0';
+
+        if (strncmp(riga, "file_x", 6) == 0) {
+            sscanf(riga, "file_x = %s", file_x);
+        } else if (strncmp(riga, "file_y", 6) == 0) {
+            sscanf(riga, "file_y = %s", file_y);
+        } else if (strncmp(riga, "N", 1) == 0) {
+            sscanf(riga, "N = %d", &N);
+        } else if (strncmp(riga, "a", 1) == 0) {
+            sscanf(riga, "a = %lf", &a);
+        } else if (strncmp(riga, "prefix_output", 13) == 0) {
+            sscanf(riga, "prefix_output = %s", prefix_output);
+        }
+    }
+    fclose(fcfg);
+
+    if (N <= 0 || a == 0.0 || strlen(file_x) == 0 || strlen(file_y) == 0 || strlen(prefix_output) == 0) {
+        printf("Errore nei dati di configurazione.\n");
+        return 1;
+    }
+
+    FILE *fx = fopen(file_x, "rb");
+    FILE *fy = fopen(file_y, "rb");
+
+    if (!fx || !fy) {
+        printf("Errore apertura file x o y.\n");
+        if (fx) fclose(fx);
+        if (fy) fclose(fy);
+        return 1;
+    }
+
+    // Alloco vettori GSL
     gsl_vector *vx = gsl_vector_alloc(N);
     gsl_vector *vy = gsl_vector_alloc(N);
     gsl_vector *vd = gsl_vector_alloc(N);
 
-    FILE *fx = fopen(file_x, "r");
-    FILE *fy = fopen(file_y, "r");
-    for (int i = 0; i < N; i++) {
-        fscanf(fx, "%lf", &vx->data[i]);
-        fscanf(fy, "%lf", &vy->data[i]);
+    if (!vx || !vy || !vd) {
+        printf("Errore allocazione memoria GSL.\n");
+        fclose(fx); fclose(fy);
+        gsl_vector_free(vx);
+        gsl_vector_free(vy);
+        gsl_vector_free(vd);
+        return 1;
     }
+
+    // Lettura da file binari dentro i vettori GSL
+    fread(vx->data, sizeof(double), N, fx);
+    fread(vy->data, sizeof(double), N, fy);
     fclose(fx); fclose(fy);
 
-    gsl_vector_memcpy(vd, vy);         // d = y
-    gsl_blas_daxpy(a, vx, vd);         // d = a * x + y
+    // Calcolo: vd = a * vx + 1.0 * vy
+    gsl_vector_memcpy(vd, vy);  // vd ← vy
+    gsl_blas_daxpy(a, vx, vd);  // vd ← a*vx + vd
 
-    FILE *fd = fopen("output_gsl.dat", "w");
-    for (int i = 0; i < N; i++) fprintf(fd, "%.2f ", gsl_vector_get(vd, i));
+    // Scrittura su file binario
+    char nome_file_d[150];
+    sprintf(nome_file_d, "%sN%d_d.dat", prefix_output, N);
+    FILE *fd = fopen(nome_file_d, "wb");
+
+    if (!fd) {
+        printf("Errore nella creazione del file di output.\n");
+        gsl_vector_free(vx);
+        gsl_vector_free(vy);
+        gsl_vector_free(vd);
+        return 1;
+    }
+
+    fwrite(vd->data, sizeof(double), N, fd);
     fclose(fd);
 
     gsl_vector_free(vx);
     gsl_vector_free(vy);
     gsl_vector_free(vd);
+
+    printf("File di output creato (usando GSL): %s\n", nome_file_d);
+    return 0;
 }
+
 ```
 
 Compile with:
