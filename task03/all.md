@@ -65,6 +65,11 @@ int main(int argc, char *argv[]) {
 }
 
 ```
+per generare i file (ad esempio dimensione 10): 
+```prompt
+./program1 10 vector_
+
+```
 # Code for 2)
 ```c
 #include <stdio.h>
@@ -195,4 +200,16 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+```
+generare prima un file .cfg del tipo:
+```c
+file_x = vector_N10_x.dat
+file_y = vector_N10_y.dat
+N = 10
+a = 3
+prefix_output = vector_
+```
+e dare in pasto al programma tramite:
+```c
+./calcola_daxpy config.cfg
 ```
