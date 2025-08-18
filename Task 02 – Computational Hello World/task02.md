@@ -29,3 +29,4 @@ println("Tutti gli elementi per N = 10 sono corretti: $(all(isapprox.(d_1, 7.4; 
 println("Tutti gli elementi per N = 10^6 sono corretti: $(all(isapprox.(d_2, 7.4; atol=1e-12)))")
 println("Tutti gli elementi per N = 10^8 sono corretti: $(all(isapprox.(d_3, 7.4; atol=1e-12)))")
 ```
+# 2) $C = AB \Rightarrow c_{ij} = \sum_{k=1}^{N} a_{ik} \, b_{kj}$&nbsp;&nbsp;&nbsp;&nbsp;with Julia
