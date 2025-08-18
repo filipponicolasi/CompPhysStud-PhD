@@ -1,6 +1,4 @@
 # 1) $\vec{d}=a\vec{x} + \vec{y}$&nbsp;&nbsp;&nbsp;&nbsp;with Julia
-
-
 ```julia
 a = 3
 n_1 = 10
@@ -30,3 +28,27 @@ println("Tutti gli elementi per N = 10^6 sono corretti: $(all(isapprox.(d_2, 7.4
 println("Tutti gli elementi per N = 10^8 sono corretti: $(all(isapprox.(d_3, 7.4; atol=1e-12)))")
 ```
 # 2) $C = AB \Rightarrow c_{ij} = \sum_{k=1}^{N} a_{ik} \, b_{kj}$&nbsp;&nbsp;&nbsp;&nbsp;with Julia
+```julia
+n_1 = 10
+n_2 = 100
+n_3 = 10000
+A_1 = fill(3, n_1, n_1)
+B_1 = fill(7.1, n_1, n_1)
+C_1 = A_1 * B_1
+A_2 = fill(3, n_2, n_2)
+B_2 = fill(7.1, n_2, n_2)
+C_2 = A_2 * B_2
+A_3 = fill(3, n_3, n_3)
+B_3 = fill(7.1, n_3, n_3)
+C_3 = A_3 * B_3
+println("Tutti gli elementi di C per N = 10 sono corretti: $(all(isapprox.(C_1, 21.3; atol=1e-12)))")
+println("Tutti gli elementi di C per N = 100 sono corretti: $(all(isapprox.(C_2, 21.3; atol=1e-12)))")
+println("Tutti gli elementi di C per N = 10000 sono corretti: $(all(isapprox.(C_3, 21.3; atol=1e-12)))")
+
+
+
+
+
+
+
+```
