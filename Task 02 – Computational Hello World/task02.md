@@ -177,8 +177,8 @@ int main() {
 ## i) Did you find any problems in running the codes for some N. If so, do you have an idea why?
 Yes. The main difficulty arose in the third exercise (matrix multiplication) for $N = 10000$.  
 
-- **Time complexity:** matrix multiplication has $O(N^3)$ cost. For $N = 10000$, this is on the order of $10^{12}$ operations, which is infeasible on a standard machine.  
-- **Memory requirements:** each \(10000 \times 10000\) `Float64` matrix needs about 0.8 GB. Since we allocate three matrices (A, B, C), the total memory usage is ~2.4 GB, which can easily exhaust RAM.  
+- **Time complexity:** matrix multiplication has $O(N^3)$ cost (how algorithm complexity scales with N). For $N = 10000$, this is on the order of $10^{12}$ operations, which is infeasible on a standard machine.  
+- **Memory requirements:** each $10000 \times 10000$ `Float64` matrix needs about 0.8 GB. Since we allocate three matrices (A, B, C), the total memory usage is ~2.4 GB, which can easily exhaust RAM.  
 
 Because of this, the program became extremely slow and practically unusable for that size.
 ## ii) Where you able to test correctly the sum and product of points 1-3? If so, how? If not, what was the problem?
