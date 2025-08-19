@@ -32,23 +32,27 @@ println("Tutti gli elementi per N = 10^8 sono corretti: $(all(isapprox.(d_3, 7.4
 n_1 = 10
 n_2 = 100
 n_3 = 10000
-A_1 = fill(3, n_1, n_1)
+A_1 = fill(3.0, n_1, n_1)
+#fill(3, n, n) crea Matrix{Int}; moltiplicando con Matrix{Float64}, ovvero B, Julia deve convertire, creando copie temporanee. Meglio tipizzare da subito!
+#quindi fill(3.0, n, n)
 B_1 = fill(7.1, n_1, n_1)
 C_1 = A_1 * B_1
-A_2 = fill(3, n_2, n_2)
+A_2 = fill(3.0, n_2, n_2)
 B_2 = fill(7.1, n_2, n_2)
 C_2 = A_2 * B_2
-A_3 = fill(3, n_3, n_3)
+A_3 = fill(3.0, n_3, n_3)
 B_3 = fill(7.1, n_3, n_3)
 C_3 = A_3 * B_3
-println("Tutti gli elementi di C per N = 10 sono corretti: $(all(isapprox.(C_1, 21.3; atol=1e-12)))")
-println("Tutti gli elementi di C per N = 100 sono corretti: $(all(isapprox.(C_2, 21.3; atol=1e-12)))")
-println("Tutti gli elementi di C per N = 10000 sono corretti: $(all(isapprox.(C_3, 21.3; atol=1e-12)))")
-
-
-
-
-
-
-
+# Nota: per N=10000 ogni matrice Float64 ≈ 0.8 GB; A,B,C ~ 2.4+ GB totali.
+# Calcolo O(N^3): molto pesante; farlo solo se la macchina lo consente.
+#credo ci sia un piccolo refuso nella consegna, gli elementi di C = N*21.3
+#println("Tutti gli elementi di C per N = 10 sono corretti: ",(all(isapprox.(C_1, 21.3; rtol=1e-12)))) -> false
+#println("Tutti gli elementi di C per N = 100 sono corretti: ",(all(isapprox.(C_2, 21.3; rtol=1e-12)))) -> false
+#println("Tutti gli elementi di C per N = 10000 sono corretti: ",(all(isapprox.(C_3, 21.3; rtol=1e-12)))) -> false
+#uso rtol e non atol, perché moltiplico un Float64 che ha errore sulla 15'esima ad N, e quindi dovrei variare di volta in volta il paragone con atol
+# isapprox usa: |x - y| ≤ atol + rtol*max(|x|,|y|)
+# qui mettiamo rtol=1e-12 (atol implicito = 0), così la tolleranza scala con N
+println("Tutti gli elementi di C per N = 10 sono corretti: ",(all(isapprox.(C_1, 21.3*n_1; rtol=1e-12))))
+println("Tutti gli elementi di C per N = 100 sono corretti: ",(all(isapprox.(C_2, 21.3*n_2; rtol=1e-12))))
+println("Tutti gli elementi di C per N = 10000 sono corretti: ",(all(isapprox.(C_3, 21.3*n_3; rtol=1e-12))))
 ```
