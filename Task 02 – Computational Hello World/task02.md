@@ -28,6 +28,7 @@ println("Tutti gli elementi per N = 10^6 sono corretti: $(all(isapprox.(d_2, 7.4
 println("Tutti gli elementi per N = 10^8 sono corretti: $(all(isapprox.(d_3, 7.4; atol=1e-12)))")
 #Per velocizzare ancor di più la cosa si sarebbe potuto sfruttare il broadcasting di Julia con: d = a .* x .+ y
 #questo si chiama fusion: Julia fonde più operazioni in un’unica passata sugli array senza creare copie temporanee.
+#infatti con d = a*x +y, già con a*x si creano nuovi oggetti da allocare in memoria che poi saranno sommati ad y creando nuovi oggetti......
 ```
 # 2) $\vec{d}=a\vec{x} + \vec{y}$&nbsp;&nbsp;&nbsp;&nbsp;with C
 ```c
