@@ -27,7 +27,62 @@ println("Tutti gli elementi per N = 10 sono corretti: $(all(isapprox.(d_1, 7.4; 
 println("Tutti gli elementi per N = 10^6 sono corretti: $(all(isapprox.(d_2, 7.4; atol=1e-12)))")
 println("Tutti gli elementi per N = 10^8 sono corretti: $(all(isapprox.(d_3, 7.4; atol=1e-12)))")
 ```
-# 2) $C = AB \Rightarrow c_{ij} = \sum_{k=1}^{N} a_{ik} \, b_{kj}$&nbsp;&nbsp;&nbsp;&nbsp;with Julia
+# 2) $\vec{d}=a\vec{x} + \vec{y}$&nbsp;&nbsp;&nbsp;&nbsp;with C
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define EPSILON 1e-12
+
+int main() {
+ long vector_sizes[] = {10, 1000000, 100000000};
+    int num_vector_sizes = 3;
+    for (int idx = 0; idx < num_vector_sizes; ++idx) {
+        long N = vector_sizes[idx];
+        // Alloca memoria per i vettori x, y e d (lunghezza N ciascuno)
+        double *x = malloc(N * sizeof(double));
+        double *y = malloc(N * sizeof(double));
+        double *d = malloc(N * sizeof(double));
+        if (x == NULL || y == NULL || d == NULL) {
+            fprintf(stderr, "Allocazione memoria fallita per N = %ld\n", N);
+            return 1;
+        }
+        // Inizializza x con 0.1 e y con 7.1
+        for (long i = 0; i < N; ++i) {
+            x[i] = 0.1;
+            y[i] = 7.1;
+        }
+        // Calcola d = a*x + y con lo scalare a = 3
+        double a = 3.0;
+        for (long i = 0; i < N; ++i) {
+            d[i] = a * x[i] + y[i];
+        }
+        // Verifica che tutti gli elementi di d siano circa uguali a 7.4 (con tolleranza assoluta)
+        double expected_val = 7.4;
+        int all_correct_vec = 1;
+        for (long i = 0; i < N; ++i) {
+            // Controllo differenza assoluta: |d[i] - expected_val| <= EPSILON
+            if (fabs(d[i] - expected_val) > EPSILON) {
+                all_correct_vec = 0;
+                break;
+            }
+        }
+        // Stampa "true" se tutti gli elementi sono corretti entro la tolleranza, altrimenti "false"
+        printf("%s\n", all_correct_vec ? "true" : "false");
+        // Libera la memoria allocata
+        free(x);
+        free(y);
+        free(d);
+    }
+
+    return 0;
+}
+```
+
+
+
+# 3.1) $C = AB \Rightarrow c_{ij} = \sum_{k=1}^{N} a_{ik} \, b_{kj}$&nbsp;&nbsp;&nbsp;&nbsp;with Julia
 ```julia
 n_1 = 10
 n_2 = 100
@@ -56,3 +111,81 @@ println("Tutti gli elementi di C per N = 10 sono corretti: ",(all(isapprox.(C_1,
 println("Tutti gli elementi di C per N = 100 sono corretti: ",(all(isapprox.(C_2, 21.3*n_2; rtol=1e-12))))
 println("Tutti gli elementi di C per N = 10000 sono corretti: ",(all(isapprox.(C_3, 21.3*n_3; rtol=1e-12))))
 ```
+# 3.1) $C = AB \Rightarrow c_{ij} = \sum_{k=1}^{N} a_{ik} \, b_{kj}$&nbsp;&nbsp;&nbsp;&nbsp;with C
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define EPSILON 1e-12
+
+int main() {
+    int matrix_sizes[] = {10, 100, 10000};
+    int num_matrix_sizes = 3;
+    for (int idx = 0; idx < num_matrix_sizes; ++idx) {
+        int N = matrix_sizes[idx];
+        // Alloca memoria per le matrici A, B e C (dimensione N x N ciascuna)
+        double *A = malloc((size_t)N * N * sizeof(double));
+        double *B = malloc((size_t)N * N * sizeof(double));
+        double *C = malloc((size_t)N * N * sizeof(double));
+        if (A == NULL || B == NULL || C == NULL) {
+            fprintf(stderr, "Allocazione memoria fallita per N = %d\n", N);
+            return 1;
+        }
+        // Inizializza A e B con costanti 3.0 e 7.1 rispettivamente
+        long total_elements = (long)N * N;
+        for (long i = 0; i < total_elements; ++i) {
+            A[i] = 3.0;
+            B[i] = 7.1;
+        }
+        // Calcola la moltiplicazione C = A * B
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                double sum = 0.0;
+                for (int k = 0; k < N; ++k) {
+                    sum += A[i * N + k] * B[k * N + j];
+                }
+                C[i * N + j] = sum;
+            }
+        }
+        // Verifica che tutti gli elementi di C siano circa uguali a N * 21.3 (con tolleranza relativa)
+        double expected_value = N * 21.3;
+        int all_correct = 1;
+        for (long i = 0; i < total_elements; ++i) {
+            double c_val = C[i];
+            // Controllo differenza relativa: |c_val - expected| <= EPSILON * max(|c_val|, |expected|)
+            if (fabs(c_val - expected_value) > EPSILON * fmax(fabs(c_val), fabs(expected_value))) {
+                all_correct = 0;
+                break;
+            }
+        }
+        // Stampa "true" se tutti gli elementi sono corretti entro la tolleranza, altrimenti "false"
+        printf("%s\n", all_correct ? "true" : "false");
+        // Libera la memoria allocata
+        free(A);
+        free(B);
+        free(C);
+    }
+    return 0;
+}
+```
+
+# Answers 
+## i) Did you find any problems in running the codes for some N. If so, do you have an idea why?
+Yes. The main difficulty arose in the third exercise (matrix multiplication) for $N = 10000$.  
+
+- **Time complexity:** matrix multiplication has $O(N^3)$ cost. For $N = 10000$, this is on the order of $10^{12}$ operations, which is infeasible on a standard machine.  
+- **Memory requirements:** each \(10000 \times 10000\) `Float64` matrix needs about 0.8 GB. Since we allocate three matrices (A, B, C), the total memory usage is ~2.4 GB, which can easily exhaust RAM.  
+
+Because of this, the program became extremely slow and practically unusable for that size.
+## ii) Where you able to test correctly the sum and product of points 1-3? If so, how? If not, what was the problem?
+At first, no. Direct comparison using `==` (in Julia) or equality tests in C failed because floating-point numbers do not represent decimal values like 0.1 or 7.1 exactly in binary. This leads to small rounding errors.  
+
+To solve this:  
+- In **Julia**, I used `isapprox` with a relative tolerance (`rtol=1e-12`), so the comparison scales with the magnitude of the numbers.  
+- In **C**, I implemented the same logic using a relative error check:  
+  $|x - y| \leq \varepsilon \cdot \max(|x|, |y|)$ 
+  with $\varepsilon = 10^{-12}$.  
+
+With these modifications, all tests passed correctly.
+ 
