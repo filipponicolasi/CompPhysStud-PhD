@@ -135,3 +135,199 @@ clean:
 #   make            : esegue solo il primo target del makefile (all) e quindi i suoi sottotarget.
 #   make clean all  : esegue prima clean, poi all
 ```
+# 4) HDF5
+### Task3.1
+```julia
+using HDF5
+#pacchetto julia per il formato HDF5
+
+if length(ARGS) == 2
+    N = parse(Int64, ARGS[1])
+    name_x = "$(ARGS[2])N$(ARGS[1])_x.h5"
+    name_y = "$(ARGS[2])N$(ARGS[1])_y.h5"
+    x = fill(0.1 , N)
+    y = fill(7.1 , N)
+# Per creare un file HDF5 devo usare le API fornite dal pacchetto HDF5.jl
+# HDF5 richiede h5open (di HDF5.jl) e scrittura di dataset: f["/x"] = x.
+# Non serve il loop: l’intero vettore viene salvatom in un colpo.
+    h5open(name_x , "w") do f
+        f["/x"] = x # crea un dataset chiamato "x" nella root "/" del file, e ci salva il vettore x
+    end
+# f["path"] = data è una funzione dell' API di HDF5 (il pacchetto usato)
+# come sempre f è l’oggetto che rappresenta il file HDF5 aperto.
+# L’operatore f["path"] = data dice: crea (o sovrascrivi) un dataset in quel percorso e mettici dentro il contenuto di data.
+
+
+    h5open(name_y , "w") do f
+        f["/y"] = y
+    end
+else
+    println("Error: invalid number of arguments. Compile as: julia task3_1.jl <N> </path/to/my/outputdir/vector_>")
+    exit(1)
+end
+```
+### Task3.2
+#### config_file
+```yaml
+N : 10
+scalar_a : 3
+vector_x_path : "/home/pipett/esercizi_julia/task03/HDF5/vector_N10_x.h5"
+vector_y_path : "/home/pipett/esercizi_julia/task03//HDF5/vector_N10_y.h5"
+prefix_output : "/home/pipett/esercizi_julia/task03//HDF5/vector_N"
+```
+```julia
+using YAML
+using HDF5
+
+if length(ARGS) != 1
+    println("Usage: julia task3_2.jl <config_file>")
+    exit(1)
+end
+config_file = YAML.load_file(ARGS[1])
+a = config_file["scalar_a"]
+xpath = config_file["vector_x_path"]
+ypath = config_file["vector_y_path"]
+prefix = config_file["prefix_output"]
+N = config_file["N"]
+
+# NON SERVE PIU' CREARE ARRAY VUOTI E RIEMPIRLI CON PUSH!
+
+
+x = h5open(xpath, "r") do f
+    read(f, "/x")
+end
+
+y = h5open(ypath, "r") do f
+    read(f, "/y")
+end
+
+# funzione dell'API del pacchetto HDF5
+
+
+if length(x) == length(y) && length(y) == N
+    d = a .* x .+ y
+    output = "$(prefix)$(N)_d.h5"
+    h5open(output, "w") do f
+        f["/d"] = d
+    end
+else
+    exit(1)
+end
+```
+#### makefile
+```make
+# 1) Genera i vettori x e y
+vectors: $(PREFIX)N$(N)_x.h5 $(PREFIX)N$(N)_y.h5
+#Anche vectors è un contenitore (phony) senza ricetta.
+# Non “si ricrea” lui: fa sì che quei due file (…_x.dat e …_y.dat) siano aggiornati.
+# Qui sì, su quei file si applica la logica dei timestamp.
+
+
+$(PREFIX)N$(N)_x.h5 $(PREFIX)N$(N)_y.h5: task3_1.jl
+        julia task3_1.jl $(N) $(PREFIX)
+# Questa è la vera regola che può essere eseguita.
+# Timestamp rule: se uno dei due file non esiste oppure è più vecchio di task3_1.jl, esegui la ricetta (che genera entrambi).
+
+# 2) Esegui daxpy (produce RESULT)
+daxpy: $(RESULT)
+# daxpy è phony, serve solo a dire: “assicura che $(RESULT) sia aggiornato”.
+$(RESULT): task3_2.jl $(CONFIG) $(PREFIX)N$(N)_x.h5 $(PREFIX)N$(N)_y.h5
+        julia task3_2.jl $(CONFIG)
+# Se $(RESULT) non esiste o è più vecchio di una qualsiasi di queste dipendenze, esegui la ricetta.
+
+# Pulizia
+.PHONY: all vectors daxpy clean
+#.PHONY definisce i target fittizi, .PHONY = dice a make che quei target non sono file veri, ma vanno sempre eseguiti.
+
+clean:
+        rm -f $(PREFIX)N$(N)_x.dat $(PREFIX)N$(N)_y.h5 $(RESULT)
+# Rimuove (senza mostrare errori se i file non esitono (-f))
+
+# per lanciare il makefile basta digitare make da terminale
+# per default make cerca i file che si chiamano esattamente makefile, Makefile o GNUmakefile
+# se il nome è diverso lancia il makefile con:
+#   make -f <nome del makefile>
+#
+# Esempi:
+#   make            : esegue solo il primo target del makefile (all) e quindi i suoi sottotarget.
+#   make clean all  : esegue prima clean, poi all
+```
+
+# 5) gsl_vector_axpby
+```julia
+# Julia può chiamare direttamente librerie scritte in C (o in linguaggi che espongono API in C).
+# Julia ha il meccanismo di ccall, che permette di chiamare una funzione definita in una libreria C nativa.
+# Quando installi questi pacchetti, Julia non “ricrea” le funzioni in puro Julia: si appoggia direttamente alla libreria C con ccall.
+
+using GSL
+using YAML
+using HDF5
+
+if length(ARGS) != 1
+    println("Usage: julia task3_2.jl <config_file>")
+    exit(1)
+end
+
+config_file = YAML.load_file(ARGS[1])
+a      = config_file["scalar_a"]
+xpath  = config_file["vector_x_path"]
+ypath  = config_file["vector_y_path"]
+prefix = config_file["prefix_output"]
+N      = config_file["N"]
+
+x = h5open(xpath, "r") do f
+    read(f, "/x")
+end
+
+y = h5open(ypath, "r") do f
+    read(f, "/y")
+end
+# funzione dell'API del pacchetto HDF5
+
+if length(x) == length(y) && length(y) == N
+    # usa GSL invece di a.*x .+ y
+    # Qui NON usiamo le "view" (che possono causare errori in alcune versioni di GSL.jl),
+    # ma allochiamo due vettori GSL, copiamo i dati Julia -> GSL, eseguiamo axpby e ricopiamo il risultato.
+
+    # 1) alloco vettori GSL (dimensione N)
+    vx = GSL.vector_alloc(N)
+    vy = GSL.vector_alloc(N)
+
+    # 2) copio i dati Julia -> GSL  (attenzione: GSL usa indici 0-based)
+    for i in 1:N
+        GSL.vector_set(vx, i-1, x[i])
+        GSL.vector_set(vy, i-1, y[i])
+    end
+
+    # 3) y ← a·x + 1·y  (in-place su vy) — questa è la DAXPY con β=1
+    GSL.vector_axpby(a, vx, 1.0, vy)
+
+    # 4) recupero il risultato GSL -> Julia
+    for i in 1:N
+        y[i] = GSL.vector_get(vy, i-1)
+    end
+    d = y  # risultato finale
+
+    # 5) libero la memoria GSL
+    GSL.vector_free(vx)
+    GSL.vector_free(vy)
+
+    # scrivo il risultato in HDF5
+    output = "$(prefix)$(N)_d.h5"
+    h5open(output, "w") do f
+        f["/d"] = d
+    end
+else
+    exit(1)
+end
+```
+
+
+
+
+
+
+
+
+
+
