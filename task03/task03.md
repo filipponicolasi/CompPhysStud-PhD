@@ -216,6 +216,19 @@ end
 ```
 #### makefile
 ```make
+# Parametri (sovrascrivibili: make N=20 PREFIX=/tmp/vector_)
+N       ?= 10
+PREFIX  ?= /home/pipett/esercizi_julia/task03/HDF5/vector_
+CONFIG  ?= config_file.yaml
+RESULT  ?= $(PREFIX)N$(N)_d.h5
+
+# Target di default
+all: vectors daxpy
+
+# all è un target phony (non è un file vero).
+# Non “si ricrea” mai: non ha ricetta né file.
+# Significa solo: “quando chiedo make (cioè all), assicurati che vectors e daxpy siano aggiornati”.
+# Quindi make non confronta timestamp per all, ma va direttamente a verificare/aggiornare le sue dipendenze.
 # 1) Genera i vettori x e y
 vectors: $(PREFIX)N$(N)_x.h5 $(PREFIX)N$(N)_y.h5
 #Anche vectors è un contenitore (phony) senza ricetta.
