@@ -71,7 +71,7 @@ open(ypath, "r") do f
         push!(y, parse(Float64, i))
     end
 end
-if length(x) == length(y) == N
+if length(x) == length(y) && length(y) == N
     d = a .* x .+ y
     output = "$(prefix)$(N)_d.dat"
     open(output, "w") do f
