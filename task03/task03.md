@@ -253,7 +253,7 @@ $(RESULT): task3_2.jl $(CONFIG) $(PREFIX)N$(N)_x.h5 $(PREFIX)N$(N)_y.h5
 #.PHONY definisce i target fittizi, .PHONY = dice a make che quei target non sono file veri, ma vanno sempre eseguiti.
 
 clean:
-        rm -f $(PREFIX)N$(N)_x.dat $(PREFIX)N$(N)_y.h5 $(RESULT)
+        rm -f $(PREFIX)N$(N)_x.h5 $(PREFIX)N$(N)_y.h5 $(RESULT)
 # Rimuove (senza mostrare errori se i file non esitono (-f))
 
 # per lanciare il makefile basta digitare make da terminale
