@@ -1,3 +1,4 @@
+# Task04: c code for f(x) vs x .txt file and numerical integral calculation (trapezoidal rule)
 ```c
 /*
  * Task 04 – Play with discrete math (soluzione in C)
@@ -293,5 +294,20 @@ int main(int argc, char **argv) {
      */
     return EXIT_SUCCESS;
 }
-
 ```
+# 1) 
+Using $N = 100000$ points $x_{inf} = 0.0$ and $x_{sup} = 1.5707963267948966$ (pi/2 with double precision) ->->-> $I = 1.9052386903632019$ \
+Considering the analytical reference value evaluated at high precision $I_{real} = 1.9052386904826758$.
+So $epsrel \\approx 6.27*10^{-11} $
+# 2)
+- Increasing $N$ alone is not enough: for example for $N=10^4, 10^5, 10^6, 10^7, 10^8, 10^9...$   $epsrel = 10^{-9}, 10^{-11}, 10^{-13}, 10^{-13}, 10^{-13}...$ \
+This shows a plateau around the 13th decimal due to floating-point round-off in double precision
+- An option can be increasing the precison in the calculation, for example using long double ($\\approx 80 bit$). For $\pi/2$, compute it inside the program as acosl(-1.0L)/2.0L (where acosl is the long-double arccos) rather than typing a decimal literal.
+# 3)
+With $N = 10^9$ and Long Double calculation precision $I = 1.9052386904826748$ $epsrel \\approx 5.2*10^{-16} $
+# 4)
+
+
+
+
+
