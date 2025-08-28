@@ -298,7 +298,7 @@ int main(int argc, char **argv) {
 # 1) 
 Using $N = 100000$ points $x_{inf} = 0.0$ and $x_{sup} = 1.5707963267948966$ (pi/2 with double precision) ->->-> $I = 1.9052386903632019$ \
 Considering the analytical reference value evaluated at high precision $I_{real} = 1.9052386904826758$.
-So $epsrel \\approx 6.27*10^{-11} $
+So $epsrel \\approx - 6.27*10^{-11} $
 # 2)
 - Increasing $N$ alone is not enough: for example for $N=10^4, 10^5, 10^6, 10^7, 10^8, 10^9...$   $epsrel = 10^{-9}, 10^{-11}, 10^{-13}, 10^{-13}, 10^{-13}...$ \
 This shows a plateau around the 13th decimal due to floating-point round-off in double precision
@@ -307,7 +307,7 @@ This shows a plateau around the 13th decimal due to floating-point round-off in 
 With $N = 10^9$ and Long Double calculation precision $I = 1.9052386904826748$ $epsrel \\approx 5.2*10^{-16} $
 # 4)
 ### Julia code
-with $N = {10^5}$ $I_{4} = 1.9052386903632170$. Yes, quite similar $epsrel_{4} \\approx 6.27 * 10^{-11}$. $absreal = |I_4-I_{real}| = 1.19*10^{-10}$
+with $N = {10^5}$ $I_{4} = 1.9052386903632170$. Yes, quite similar $epsrel_{4} \\approx 6.27 * 10^{-11}$. $absreal = |I_4-I| = 1.51*10^{-14}$. 
 ```julia
 using DelimitedFiles # per usare la funzione readdlm
 using Printf # per stampare i risultati nel formato che desidero (16 cifre decimali nel nostro caso)
