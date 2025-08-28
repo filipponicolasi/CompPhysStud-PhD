@@ -306,6 +306,65 @@ This shows a plateau around the 13th decimal due to floating-point round-off in 
 # 3)
 With $N = 10^9$ and Long Double calculation precision $I = 1.9052386904826748$ $epsrel \\approx 5.2*10^{-16} $
 # 4)
+### Julia code
+with $N = {10^5}$ $I_{4} = 1.9052386903632170$. Yes, quite similar $epsrel_{4} \\approx 6.27 * 10^{-11}$. $absreal = |I_4-I_{real}| = 1.19*10^{-10}$
+```julia
+using DelimitedFiles # per usare la funzione readdlm
+using Printf # per stampare i risultati nel formato che desidero (16 cifre decimali nel nostro caso)
+
+
+if length(ARGS) == 1
+    path = ARGS[1]
+    data = readdlm(path)
+else 
+    println("Usage: julia task04.jl <path_to_data_file (or if you are in the same directory as the script, just use the filename)>")
+    exit(1)
+end
+
+# readdlm restituisce una matrice con tante righe quante sono le linee del file, e due colonne (x, y)
+# usando readdlm(path) senza specificare altro, Julia cerca di capire il tipo dei dati:
+# se tutto quello che trova nel file sono numeri (in questo caso, due colonne di double stampati dal C), allora readdlm restituisce una Matrix{Float64} N × 2;
+# se invece ci fossero stringhe mischiate, si otterrebbe una Matrix{Any}.
+
+# Estraiamo le colonne
+x = data[:, 1]   # prima colonna
+y = data[:, 2]   # seconda colonna
+# per capire la sintassi:
+# M[:,1]   # tutte le righe, prima colonna -> [1,3,5]
+# M[:,2]   # tutte le righe, seconda colonna -> [2,4,6]
+# ricorda che se la matrice è M = [1 2 3; 4 5 6; 7 8 9], allora la salva come un array bidimensionale column-major order (cioè colonna per colonna, non riga per riga).
+# del tipo: [1 4 7 2 5 8 3 6 9] IN MEMORIA!.
+# in questo esempio l'accesso ad una Matrix avviene con indici M[2,3] (riga 2, colonna 3) -> 6 o con accesso lineare M[8] -> 6
+
+# ok, ora abbiamo x = Vector{Float64} e y = Vector{Float64}, possiamo calcolare l'integrale col metodo dei trapezi
+# quindi definisco la funzione:
+
+function trap(g::AbstractVector{<:Real}, h::AbstractVector{<:Real})
+# AbstractVector è un tipo astratto che rappresenta “tutti gli array monodimensionali” (oggetti indicizzabili con un solo indice lineare, tipo v[i]
+# in questo caso {<:Real} definisce tutti gli array monod. a valori realiVector{Float64}, Vector{Int64} ecc.
+# g::AbstractVector{<:Real} è in questo caso sia un filtro sia un’informazione di tipo dentro il corpo. 
+# Se avessi scritto g::Vector{Int64}, allora all'interno della funzione avrei potuto usare solo funzioni che operano su array di interi.
+# In questo caso non limitiamo quali argomenti fanno scattare quel metodo (dispatch).
+# In Julia il dispatch è multiplo (multiple dispatch): la scelta del metodo dipende da tutti i tipi degli argomenti della funzione.
+# Questo permette di scrivere funzioni molto generiche e allo stesso tempo efficienti
+# Julia deciderà quale metodo chiamare a runtime, senza bisogno di gerarchie di classi.
+
+if length(g) != length(h)
+    println("Incompatible vector lengths")
+    exit(1)
+else
+    somma = 0.0
+    n = length(g)
+    for i in 1:(n-1)
+        somma +=(g[i]+g[i+1]) * (h[i+1] - h[i]) / 2
+    end
+    @printf("%.16f\n", somma) 
+    # @Printf è una macro, per quello la @, julia prende ("%.16f\n", somma) e la passa alla macro @Printf che fa Printf.printf(io, fmt, args...)
+end
+end
+trap(y,x) 
+```
+
 
 
 
