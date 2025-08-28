@@ -303,10 +303,10 @@ So $epsrel \\approx - 6.27*10^{-11} $
 - Increasing $N$ alone is not enough: for example for $N=10^4, 10^5, 10^6, 10^7, 10^8, 10^9...$   $epsrel = 10^{-9}, 10^{-11}, 10^{-13}, 10^{-13}, 10^{-13}, 10^{-13} ...$ \
 This shows a plateau around the 13th decimal due to floating-point round-off in double precision
 - An option can be increasing the precison in the calculation, for example using long double ($\\approx 80 bit$). For $\pi/2$, compute it inside the program as acosl(-1.0L)/2.0L (where acosl is the long-double arccos) rather than typing a decimal literal.\
-**P.S.** I tried this option but it does not change the results for moderate \(N\)!  
-I realized that there are two contributions: the truncation error due to the method (and therefore to \(N\)),  
+**P.S.** I tried this option but it does not change the results for moderate N!  
+I realized that there are two contributions: the truncation error due to the method (and therefore to $N$),  
 and the round-off error due to floating-point precision (`float`, `double`, `long double`, etc.).  
-So, in order to appreciate the better precision of `long double`, we have to increase \(N\),  
+So, in order to appreciate the better precision of `long double`, we have to increase $N$,  
 thus decreasing the truncation error. See point 3.  
 # 3)
 With $N = 10^5$ (like the precedent example) and Long Double calculation precision $I = 1.90523869036320028206$ $epsrel \\approx 6.27*10^{-11}$ It does not change much but the trend is better for larger $N$: \
