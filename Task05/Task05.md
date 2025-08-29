@@ -1,3 +1,5 @@
+# Task05 with julia
+## 1- Using for loop
 ```julia
 v = [1.0, 1.0e16, -1.0e16, -0.5]
 somma = 0.0
@@ -42,4 +44,41 @@ println(somma)
 # 10^16 - 10^16 = 0
 # 0 - 0.5 = -0.5
 ```
+# 2- Using Xsum package
+Xsum does not make all computations “perfect”; it specifically computes the sum correctly rounded to Float64—that is, the value you would obtain by performing the summation in infinite precision and then rounding to the nearest Float64. Naturally, the library does not actually use infinite-precision arithmetic. Instead, it implements an algorithm known as exact floating-point summation (developed by Radford Neal). The key idea is that, rather than discarding the bits that cannot fit into a Float64, these bits are accumulated in auxiliary structures so that no contribution is lost. In the end, the algorithm reconstructs the exact base-2 sum—as if all additions had been done with arbitrarily large integers—and then rounds it once to the nearest Float64.
+```julia
+using Xsum
+vec = [1.0, 1.0e16, -1.0e16, -0.5]
+somma = xsum(vec)   
+println(somma)
+```
+# 3- Using Kahan summation algorithm
+In Julia there is already the algorithm in the package 'KahanSummation'. The Kahan summation algorithm is compensated with the strongest Kahan–Babuška–Neumaier algorithm:
+```julia
+using KahanSummation
+vec = [1.0, 1.0e16, -1.0e16, -0.5]
+somma = sum_kbn(vec)           
+println(somma)                
+```
+without the package, only Kahan summation does not work well (it returns -0.5). It has to be implemented with the compensated summ KBN (Kahan–Babuška–Neumaier):
+```julia
+vec = [1.0, 1.0e16, -1.0e16, -0.5]
+function KBN_sum(a)
+    somma = 0.0
+    c = 0.0
+    for x in a
+        t = somma + x
+        if abs(somma) >= abs(x)
+            c += (somma - t) + x
+        else
+            c += (x - t) + somma
+        end
+        somma = t
+    end
+    println(somma + c)
+end
 
+KBN_sum(vec)  
+```
+##Consideration
+No, they are not the same. The simplest for loop does not take into account that there is a loss in information for integers higher than $2^{53}$. So the extrabit in the mantissa for non perfectly definite number (like $10^16 + 1$) are lost and the number is round-off using the round to nearest, ties to even rule (in this case $10^{16} + 1 = 10^{16}$).
