@@ -117,3 +117,39 @@ else
     exit(1)
 end
 ```
+### Consideration
+I have to test the right run of daxpy operations and i also have to test the if the output is coherent with the statistics.
+It means that i have to create a control function in the daxpy code that compares numerically the output with a test funtion, and i have to test if the output d has $mean \\approx 0$ and standard deviation $std \\approx {a^2 +1}^0.5:
+```julia
+# --- TEST NUMERICO con axpy! (controllo DAXPY) ---
+using LinearAlgebra
+d_test = copy(y)            # non distruggere y
+axpy!(a, x, d_test)         # d_test = a*x + y (BLAS)
+maxerr = maximum(abs.(d .- d_test))
+println("\n[Numerical] max|d - (a*x + y)| = ", maxerr)
+println(maxerr < 1e-12 ? "-> OK: DAXPY correct within tolerance 1e-12." :
+                         "-> ATTENTION: large error; check calc/I/O.")
+
+# --- TEST STATISTICO su d (coerenza con teoria) ---
+using Statistics
+N = length(d)
+mu_hat  = mean(d)
+std_pop = std(d, corrected=false)        # deviazione standard "popolazione"
+std_th  = sqrt(a^2 + 1)
+
+# Soglia semplice per la media: 3σ/sqrt(N)
+thr_mean = 3 * std_pop / sqrt(N)
+
+println("\n[Stats] mean(d) = ", mu_hat, "   expected ≈ 0   (|mean| ≤ ", thr_mean, " ?)")
+println(abs(mu_hat) <= thr_mean ? "-> OK: mean compatible with 0." :
+                                  "-> ATTENTION: mean far from 0 (maybe N too small).")
+
+println("[Stats] std(d)  = ", std_pop, "   expected ≈ ", std_th)
+rel_err_std = abs(std_pop - std_th) / std_th
+println("         relative error on std = ", round(rel_err_std*100, digits=2), "%")
+
+```
+
+
+
+
