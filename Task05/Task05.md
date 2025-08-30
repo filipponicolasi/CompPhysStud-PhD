@@ -1,4 +1,4 @@
-# Task05 with julia
+# a) vector sum with julia
 ## 1- Using for loop
 ```julia
 v = [1.0, 1.0e16, -1.0e16, -0.5]
@@ -80,5 +80,40 @@ end
 
 KBN_sum(vec)  
 ```
-##Consideration
+## Consideration
 No, they are not the same. The simplest for loop does not take into account that there is a loss in information for integers higher than $2^{53}$. So the extrabit in the mantissa for non perfectly definite number (like $10^16 + 1$) are lost and the number is round-off using the round to nearest, ties to even rule (in this case $10^{16} + 1 = 10^{16}$).
+
+# b) Code for daxpy mean = 0 std = 1
+```julia
+# randn(N) restituisce un array di N numeri pseudocasuali indipendenti, ciascuno distribuito secondo una gaussiana standard (µ=0, σ=1).
+# L’array risultante in media avrà proprietà vicine a quelle teoriche, ma non perfettamente esatte secondo normale fluttuazione campionaria.
+# Più grande è N, più i valori osservati si avvicineranno a quelli teorici.
+
+
+using Statistics
+using Random # quello che ci serve per randn(N)
+
+if length(ARGS) == 2 
+    N = parse(Int64, ARGS[1])
+    name_x = "$(ARGS[2])N$(ARGS[1])_x.dat"
+    name_y = "$(ARGS[2])N$(ARGS[1])_y.dat"
+    # ora creo due bei array:
+    x = randn(N) 
+    y = randn(N)
+    open(name_x , "w") do f
+        for i in x    
+            write(f, string(i, "\n")) 
+        end
+    end
+    open(name_y , "w") do f
+        for i in y
+            write(f, string(i, "\n"))
+        end
+    end
+    println("vector_N$N_x.dat created with mean $(mean(x)) and std $(std(x))")
+    println("vector_N$N_y.dat created with mean $(mean(y)) and std $(std(y))")
+else
+    println("Error: invalid number of arguments. Compile as: julia task3_1.jl <N> </path/to/my/outputdir/vector_>")
+    exit(1)
+end
+```
