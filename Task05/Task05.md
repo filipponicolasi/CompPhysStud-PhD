@@ -1,4 +1,4 @@
-# a) vector sum with julia
+# a) Vector sum with julia
 ## 1- Using for loop
 ```julia
 v = [1.0, 1.0e16, -1.0e16, -0.5]
