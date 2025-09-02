@@ -1,6 +1,7 @@
-
+# Task08 with julia
+The vectors with daxpy and chunks summ are perfectly equal (calculated for N = 100000 and chunksize=1000). The sum of the daxpy vector and the sum of the partial sum vector are equal (relative tollerance = 10^-12). 
 ```julia
-
+#Task08 with julia
 using YAML 
 
 
@@ -26,7 +27,7 @@ open(ypath, "r") do f
         push!(y, parse(Float64, i))
     end
 end
-if length(x) != length(y) && length(y) != N #piccola modifica per tenere più ordine
+if length(x) != length(y) || length(y) != N #piccola modifica per tenere più ordine
     println("Error: Vectors must have the same length and equal to N")
     exit(1)
 end
@@ -47,43 +48,64 @@ end
 
 # numero di chunk
 chunksize = 1000
-Nchunks = cld(N , chunksize)
+Nchunks = cld(N , chunksize) #cld(10, 3) = 4
 d_chunk = Vector{Float64}(undef, N) #inizializzo il vettore d_chunk
-
+partial_chunk_sum = Vector{Float64}(undef, Nchunks) 
 for i in 0:(Nchunks -1)
     start = i * chunksize + 1
-    stop = (i + 1) * chunksize
-    if stop > N
+    stop = (i + 1) * chunksize    #stop = min((i + 1) * chunksize, N) forse meglio
+    if stop > N         
         stop = N
     end
     
     for j in start:stop
         d_chunk[j] = a * x[j] + y[j]
+
     end
+
+    partial_chunk_sum[i + 1] = sum(d_chunk[start:stop]) # sono quasi alla fine del loop, salvo in array la somma parziale di un chunk j-esimo
 end
 
 
 # inserisco i risultati in file .dat
 
-output1 = "$(prefix)$(N)_d.dat"
-open(output1, "w") do f
-    for i in d
-        println(f, i)
-    end
-end
 output2 = "$(prefix)$(N)_d_chunk.dat"
 open(output2, "w") do f
     for i in d_chunk
         println(f, i)
     end
 end 
+output3 = "$(prefix)$(N)_d_partial_chunk_sum.dat"
+open(output3, "w") do f
+    for i in partial_chunk_sum
+        println(f, i)
+    end
+end 
 
-#confronto i due risultati
+
+
+
+# qui da mettere apposto forse il makefile per comodità
+
+
+
+
+# confronto i due risultati
 # ricorda che isapprox qua è in broadcasting e dà boleani che di volta in volta vengono valutati da all()
 # non si crea in memoria un array di booleani, ma si valuta uno per uno, quindi alla fine all restituisce true se son tutti true
-if differenceall(isapprox.(d, d_chunk; rtol=0.0, atol=0.0)) == true # ho posto tolleranze per fare più prove (ma in questo caso il risultato è sempre esatto)
-    println("the two vectors are equal")
+if all(isapprox.(d, d_chunk; rtol=0.0, atol=0.0)) == true # ho posto tolleranze per fare più prove (ma in questo caso il risultato è sempre proprio esatto, quindi rtol=0.0, atol=0.0)
+    println("Vector d and the 'chunk-vector' are equal")
 else
-    println("the two vectors are not equal")
+    println("Vector d and the 'chunk-vector' are not equal")
 end 
+
+
+
+if isapprox(sum(d), sum(partial_chunk_sum); rtol=1e-12, atol=0.0) == true
+    println("Sum(d) and the Sum(partial_chunk_sum) are equal (rtol=1e-12)")
+else
+    println("Sum(d) and the Sum(partial_chunk_sum) are not equal and differs for $(abs(sum(d) - sum(partial_chunk_sum)))")
+end 
+
+
 ```
