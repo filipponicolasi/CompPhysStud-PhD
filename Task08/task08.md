@@ -1,5 +1,5 @@
 # Task08 with julia
-The vectors with daxpy and chunks summ are perfectly equal (calculated for N = 100000 and chunksize=1000). The sum of the daxpy vector and the sum of the partial sum vector are equal (relative tollerance = 10^-12). 
+The vectors with daxpy and chunks sum are perfectly equal (calculated for N = 100000 and chunksize=1000). The sum of the daxpy vector and the sum of the partial sum vector are equal (relative tolerance = 10^-12). 
 ```julia
 #Task08 with julia
 using YAML 
