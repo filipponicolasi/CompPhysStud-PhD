@@ -37,3 +37,16 @@ To compare the parallel method with the serial one, we will:
 - implement the **parallel version** using Julia threads, ensuring both versions share the same memory layout and I/O structure;
 - measure the **total execution time** of the computation kernel (a single overall timing is sufficient);
 - verify correctness by comparing the parallel result with the serial reference.
+
+## Serial DAXPY calculation (serial_DAXPY_calculation.jl)
+
+
+
+
+
+
+
+
+
+
+
