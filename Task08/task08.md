@@ -47,7 +47,7 @@ end
 
 
 # numero di chunk
-chunksize = 1000
+chunksize = 1000 #si potrebbe parametrizzare nel config
 Nchunks = cld(N , chunksize) #cld(10, 3) = 4
 d_chunk = Vector{Float64}(undef, N) #inizializzo il vettore d_chunk
 partial_chunk_sum = Vector{Float64}(undef, Nchunks) 
