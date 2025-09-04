@@ -42,7 +42,7 @@ To compare the parallel method with the serial one, we will:
 
 For the serial DAXPY I use **broadcasting**. To measure runtime I use the `@elapsed` macro, which returns the wall-clock time for the wrapped expression. In this setup, `@elapsed` includes not only the arithmetic but also the **allocation** of `d` and the **one-time JIT compilation** cost (Julia compiles the broadcasting expression on first use, then reuses the compiled code thereafter). To minimize JIT effects, perform a warm-up run; to exclude allocation, pre-allocate `d` and use in-place broadcasting: `d .= a .* x .+ y`.
 
-###serial_DAXPY_calculation.jl
+### serial_DAXPY_calculation.jl
 ```julia
 # serial_DAXPY_calculation.jl
 
