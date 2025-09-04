@@ -1,4 +1,4 @@
-# Task09
+# Task09: OpenMP
 ## Preliminary considerations
 To execute all the `task09.jl` tasks I implemented the configuration file as:
 ### config_file:
@@ -185,8 +185,34 @@ Total compute time for parallel calculation:
 
 With one thread, the `@threads` macro adds setup and waiting overhead, so it’s slower than the plain serial loop. As we increase the thread count, that overhead gets spread out and things speed up—until the program becomes limited by how fast data can be moved to and from memory. At that point (around 5–8 threads, ≈0.06–0.07 s) it plateaus. Beyond that, adding more threads doesn’t help because the memory transfer rate is already maxed out (small timing wiggles can be normal due to scheduling and the mix of P- and E-cores).
 
+# MPI
+In Julia, MPI-based distributed parallelism is provided by the **MPI.jl** package. With MPI you launch P processes of the same program; each process has a rank (an ID from 0 to P−1) and its own private memory.
+
+In our case we use **P = 4** to split the work over $N$ elements. **Rank 0** reads the input vectors `x` and `y`, splits them into contiguous blocks, and sends each block to the corresponding process using **Scatterv**. Every process (Rank 1,2,3) then computes its local result `d_loc = a * x_loc + y_loc`. Finally, **rank 0** collects all local pieces and reconstructs the global vector `d` using **Gatherv**.
+
+MPI is not the same as threads: threads share the same memory while with MPI, processes do not share memory and communicate only by sending messages.
+```julia
+# MPI_DAXPY_calculation.jl
+
+using YAML
+using MPI
+
+if length(ARGS) != 1
+    println("Usage: julia <program_name> <config_file>")
+    exit(1)
+end
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+```
