@@ -3,10 +3,10 @@
 To execute all the `task09.jl` tasks I implemented the configuration file as:
 ### config_file:
 ```yaml
-N : 100000000 #if you change N remeber to change N also in the input strings here!
+N : 1000000 #if you change N remeber to change N also in the input strings here!
 scalar_a : 3
-vector_x_path : "vector_N100000000_x.dat" #in the actual dir
-vector_y_path : "vector_N100000000_y.dat" #in the actual dir
+vector_x_path : "vector_N1000000_x.dat" #in the actual dir
+vector_y_path : "vector_N1000000_y.dat" #in the actual dir
 prefix_output : "vector_N" #in the actual dir
  ```
 In this task we parallelize the DAXPY calculation by creating threads inside a single process.  
@@ -167,6 +167,7 @@ end
 println("Total_compute_time = $(t) s")
 ```
 ### Results
+Calculations were computed for $N = 10^{6}$
 Total compute time for serial calculation:\
 $= 0.098 s$
 Total compute time for parallel calculation:
