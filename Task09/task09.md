@@ -34,14 +34,71 @@ In total this CPU exposes **28 logical threads**.
 ### Methodology
 To compare the parallel method with the serial one, we will:
 - define a **serial DAXPY calculation** (based on Task03) that serves as the reference baseline;
-- implement the **parallel version** using Julia threads, ensuring both versions share the same memory layout and I/O structure;
+- implement the **parallel version** using Julia threads, ensuring both versions share more or less the same memory layout;
 - measure the **total execution time** of the computation kernel (a single overall timing is sufficient);
 - verify correctness by comparing the parallel result with the serial reference.
 
 ## Serial DAXPY calculation (serial_DAXPY_calculation.jl)
 
+For the serial DAXPY I use **broadcasting**. To measure runtime I use the `@elapsed` macro, which returns the wall-clock time for the wrapped expression. In this setup, `@elapsed` includes not only the arithmetic but also the **allocation** of `d` and the **one-time JIT compilation** cost (Julia compiles the broadcasting expression on first use, then reuses the compiled code thereafter). To minimize JIT effects, perform a warm-up run; to exclude allocation, pre-allocate `d` and use in-place broadcasting: `d .= a .* x .+ y`.
+
+###serial_DAXPY_calculation.jl
+```julia
+# serial_DAXPY_calculation.jl
+
+using YAML 
 
 
+
+# Check for correct number of arguments
+if length(ARGS) != 1
+    println("Usage: julia <program_name> <config_file>")
+    exit(1)
+end
+
+#Load configuration from YAML file
+config_file = YAML.load_file(ARGS[1]) 
+a = config_file["scalar_a"]
+xpath = config_file["vector_x_path"]
+ypath = config_file["vector_y_path"]
+prefix = config_file["prefix_output"]
+N = config_file["N"]
+chunksize = config_file["chunksize"]
+x = Float64[]    
+y = Float64[]
+
+#read input vectors from files
+open(xpath, "r") do f
+    for i in eachline(f)
+        push!(x, parse(Float64, i))
+    end
+end
+open(ypath, "r") do f
+    for i in eachline(f)
+        push!(y, parse(Float64, i))
+    end
+end
+if length(x) != length(y) || length(y) != N 
+    println("Error: Vectors must have the same length and equal to N")
+    exit(1)
+end
+
+#Broadcasting serial calculation and timing 
+t = @elapsed begin
+d = a .* x .+ y
+end 
+
+# Write the result to a file
+output = "$(prefix)$(N)_d_serial.dat"
+open(output, "w") do f
+        for i in d
+            println(f, i)
+        end
+end 
+
+#Print total compute time
+println("Total_compute_time = $(t) s")
+```
 
 
 
