@@ -177,15 +177,73 @@ println("Total_compute_time = $(t) s")
 ```
 ### Results
 Total compute time for serial calculation $= 0.290 s$
-Total compute time for serial calculation $= 5.173475557 s$
+Total compute time for serial calculation $= 6.67 s$
 
 This results is quite controintuitive but shows problems in our parallel calulation architecture. In detail we see more time in parallel calculation because @threads per sè exploite time to divide the works to every thread. If N is small il lavoro per thread è “troppo poco” per ammortizzare lo scheduling, le barriere e la sincronizzazione.
 So **the chunking is not necessary** we **loose time for nothing**.
 For this N we must use threads to divide the work respect to the N calculation! 
 ### parallel_daxpy_calculation.jl rewieved
 ```julia
+#parallel_DAXPY_calculation.jl
+# serial_DAXPY_calculation.jl
 
+using YAML 
+using Base.Threads #for multithreading
+
+
+# Check for correct number of arguments
+if length(ARGS) != 1
+    println("Usage: julia <program_name> <config_file>")
+    exit(1)
+end
+
+#Load configuration from YAML file
+config_file = YAML.load_file(ARGS[1]) 
+a = config_file["scalar_a"]
+xpath = config_file["vector_x_path"]
+ypath = config_file["vector_y_path"]
+prefix = config_file["prefix_output"]
+N = config_file["N"]
+x = Float64[]    
+y = Float64[]
+
+#read input vectors from files
+open(xpath, "r") do f
+    for i in eachline(f)
+        push!(x, parse(Float64, i))
+    end
+end
+open(ypath, "r") do f
+    for i in eachline(f)
+        push!(y, parse(Float64, i))
+    end
+end
+if length(x) != length(y) || length(y) != N 
+    println("Error: Vectors must have the same length and equal to N")
+    exit(1)
+end
+
+#Parallel calculation using Threads and timing
+d_parallel_rev = Vector{Float64}(undef, N)
+t = @elapsed begin
+    @threads  for i in 1:N
+               d_parallel_rev[i] = a * x[i] + y[i]
+              end
+end
+
+# Write the result to a file
+output = "$(prefix)$(N)_d_parallel.dat"
+open(output, "w") do f
+        for i in d_parallel_rev
+            println(f, i)
+        end
+end 
+
+#Print total compute time
+println("Total_compute_time = $(t) s")
 ```
-
+### Results
+Total compute time for serial calculation $= 0.290 s$
+Total compute time for reviewed parallel calculation $= 6.33 s$
 
 
