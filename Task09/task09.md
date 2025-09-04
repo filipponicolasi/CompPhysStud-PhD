@@ -100,6 +100,23 @@ end
 println("Total_compute_time = $(t) s")
 ```
 
+## Parallel DAXPY calculation (parallel_DAXPY_calculation.jl)
+In Julia, parallel for-loops use the native `Base.Threads` module. If we iterate over `0:(Nchunks-1)` (i.e., `Nchunks` iterations) and prepend `Threads.@threads`, Julia statically splits those iterations across the number of threads specified at startup (e.g., `julia -t <number_of_threads> task09.jl <config_file>`).
+
+Example: with vectors `x` and `y` of size \(N = 10^{8}\) and `chunksize = 1000`, we have
+\[
+N_{\text{chunks}} = \frac{10^{8}}{10^{3}} = 100{,}000.
+\]
+If we start Julia with 5 threads, the loop of 100,000 iterations is partitioned into 5 contiguous blocks, so each thread executes about \(100{,}000/5 = 20{,}000\) iterations (chunks). At the end of the `@threads for ... end` block there is an implicit barrier, so execution continues only after all threads have finished.
+
+### parallel_daxpy_calculation.jl
+
+
+
+
+```julia
+
+```
 
 
 
