@@ -158,7 +158,7 @@ end
 # Write the result to a file
 output = "$(prefix)$(N)_d_parallel.dat"
 open(output, "w") do f
-        for i in d_chunk
+        for i in d_parallel
             println(f, i)
         end
 end 
