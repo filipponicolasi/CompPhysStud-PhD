@@ -108,11 +108,8 @@ Example: with vectors `x` and `y` of size $N = 10^{8}$ and `chunksize = 1000`, w
 
 If we start Julia with 5 threads, the loop of 100000 iterations is partitioned into 5 contiguous blocks, so each thread executes about $100000/5 = 20000$ iterations (chunks). At the end of the `@threads for ... end` block there is an implicit barrier, so execution continues only after all threads have finished.
 
+Also in this case, `@elapsed` is used in order to include not only the arithmetic but also memory allocation and the one-time JIT compilation cost.
 ### parallel_daxpy_calculation.jl
-
-
-
-
 ```julia
 #parallel_DAXPY_calculation.jl
 # serial_DAXPY_calculation.jl
@@ -178,10 +175,17 @@ end
 #Print total compute time
 println("Total_compute_time = $(t) s")
 ```
+### Results
+Total compute time for serial calculation $= 0.290 s$
+Total compute time for serial calculation $= 5.173475557 s$
 
+This results is quite controintuitive but shows problems in our parallel calulation architecture. In detail we see more time in parallel calculation because @threads per sè exploite time to divide the works to every thread. If N is small il lavoro per thread è “troppo poco” per ammortizzare lo scheduling, le barriere e la sincronizzazione.
+So **the chunking is not necessary** we **loose time for nothing**.
+For this N we must use threads to divide the work respect to the N calculation! 
+### parallel_daxpy_calculation.jl rewieved
+```julia
 
-
-
+```
 
 
 
