@@ -5,11 +5,11 @@ To execute `task09.jl` I implemented a configuration file that parametrizes:
 - the number of elements per chunk (`chunksize`)
 ### config_file:
 ```yaml
-N : 1000000 #if you change N remeber to change N also in the input strings here!
+N : 100000000 #if you change N remeber to change N also in the input strings here!
 chunksize : 1000
 scalar_a : 3
-vector_x_path : "vector_N1000000_x.dat" #in the actual dir
-vector_y_path : "vector_N1000000_y.dat" #in the actual dir
+vector_x_path : "vector_N100000000_x.dat" #in the actual dir
+vector_y_path : "vector_N100000000_y.dat" #in the actual dir
 prefix_output : "vector_N" #in the actual dir
  ```
 In this task we parallelize the DAXPY calculation by creating threads inside a single process.  
