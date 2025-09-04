@@ -40,7 +40,9 @@ To compare the parallel method with the serial one, we will:
 
 ## Serial DAXPY calculation (serial_DAXPY_calculation.jl)
 
-For the serial DAXPY I use **broadcasting**. To measure runtime I use the `@elapsed` macro, which returns the wall-clock time for the wrapped expression. In this setup, `@elapsed` includes not only the arithmetic but also the **allocation** of `d` and the **one-time JIT compilation** cost (Julia compiles the broadcasting expression on first use, then reuses the compiled code thereafter). To minimize JIT effects, perform a warm-up run; to exclude allocation, pre-allocate `d` and use in-place broadcasting: `d .= a .* x .+ y`.
+For the serial DAXPY I use broadcasting (`d = a .* x .+ y`).  
+Runtime is measured with the `@elapsed` macro, which returns the wall-clock time of the wrapped expression.  
+With this setup the timing includes not only the arithmetic but also the allocation of `d` and the one-time JIT compilation cost, since Julia compiles the broadcasting expression on first use and then reuses the compiled code on subsequent runs.
 
 ### serial_DAXPY_calculation.jl
 ```julia
@@ -63,7 +65,6 @@ xpath = config_file["vector_x_path"]
 ypath = config_file["vector_y_path"]
 prefix = config_file["prefix_output"]
 N = config_file["N"]
-chunksize = config_file["chunksize"]
 x = Float64[]    
 y = Float64[]
 
@@ -103,11 +104,9 @@ println("Total_compute_time = $(t) s")
 ## Parallel DAXPY calculation (parallel_DAXPY_calculation.jl)
 In Julia, parallel for-loops use the native `Base.Threads` module. If we iterate over `0:(Nchunks-1)` (i.e., `Nchunks` iterations) and prepend `Threads.@threads`, Julia statically splits those iterations across the number of threads specified at startup (e.g., `julia -t <number_of_threads> task09.jl <config_file>`).
 
-Example: with vectors `x` and `y` of size \(N = 10^{8}\) and `chunksize = 1000`, we have
-\[
-N_{\text{chunks}} = \frac{10^{8}}{10^{3}} = 100{,}000.
-\]
-If we start Julia with 5 threads, the loop of 100,000 iterations is partitioned into 5 contiguous blocks, so each thread executes about \(100{,}000/5 = 20{,}000\) iterations (chunks). At the end of the `@threads for ... end` block there is an implicit barrier, so execution continues only after all threads have finished.
+Example: with vectors `x` and `y` of size $N = 10^{8}$ and `chunksize = 1000`, we have $$N_{\text{chunks}} = \frac{10^{8}}{10^{3}} = 100000$$.
+
+If we start Julia with 5 threads, the loop of 100000 iterations is partitioned into 5 contiguous blocks, so each thread executes about $100000/5 = 20000$ iterations (chunks). At the end of the `@threads for ... end` block there is an implicit barrier, so execution continues only after all threads have finished.
 
 ### parallel_daxpy_calculation.jl
 
@@ -115,7 +114,69 @@ If we start Julia with 5 threads, the loop of 100,000 iterations is partitioned 
 
 
 ```julia
+#parallel_DAXPY_calculation.jl
+# serial_DAXPY_calculation.jl
 
+using YAML 
+using Base.Threads #for multithreading
+
+
+# Check for correct number of arguments
+if length(ARGS) != 1
+    println("Usage: julia <program_name> <config_file>")
+    exit(1)
+end
+
+#Load configuration from YAML file
+config_file = YAML.load_file(ARGS[1]) 
+a = config_file["scalar_a"]
+xpath = config_file["vector_x_path"]
+ypath = config_file["vector_y_path"]
+prefix = config_file["prefix_output"]
+N = config_file["N"]
+chunksize = config_file["chunksize"]
+x = Float64[]    
+y = Float64[]
+
+#read input vectors from files
+open(xpath, "r") do f
+    for i in eachline(f)
+        push!(x, parse(Float64, i))
+    end
+end
+open(ypath, "r") do f
+    for i in eachline(f)
+        push!(y, parse(Float64, i))
+    end
+end
+if length(x) != length(y) || length(y) != N 
+    println("Error: Vectors must have the same length and equal to N")
+    exit(1)
+end
+
+#Parallel calculation using Threads and timing
+t = @elapsed begin
+d_chunk = Vector{Float64}(undef, N)
+Nchunks = cld(N, chunksize)
+    @threads  for i in 0:(Nchunks -1)
+                 start = i * chunksize + 1 
+                 stop = min((i + 1) * chunksize, N) #little variation
+                    for j in start:stop
+                        d_chunk[j] = a * x[j] + y[j]
+                    end
+              end
+end
+
+# Write the result to a file
+output = "$(prefix)$(N)_d_parallel.dat"
+open(output, "w") do f
+        for i in d_chunk
+            println(f, i)
+        end
+end 
+
+#Print total compute time
+println("Total_compute_time = $(t) s")
 ```
 
 
