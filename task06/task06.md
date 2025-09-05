@@ -1,4 +1,4 @@
-# Task06 — Julia (Answers)
+# Task06 — Julia 
 
 2) **Inverse c2c** — errors (√MSE and √MedSE)  
 - **Absolute**: RMSE = **4.91e-16**; RMedSE = **3.33e-16**  
