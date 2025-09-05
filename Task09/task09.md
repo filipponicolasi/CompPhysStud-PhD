@@ -168,20 +168,21 @@ println("Total_compute_time = $(t) s")
 ```
 ### Results
 Calculations were computed for $N = 10^{6}$
-Total compute time for serial calculation:\
-$= 0.098 s$
-Total compute time for parallel calculation:
-1  thread: $= 0.115 s$
-2  thread: $= 0.096 s$
-3  thread: $= 0.082 s$
-4  thread: $= 0.073 s$
-5  thread: $= 0.068 s$
-6  thread: $= 0.062 s$
-7  thread: $= 0.058 s$
-8  thread: $= 0.060 s$
-9  thread: $= 0.063 s$
-10 thread: $= 0.068 s$
-10--->20 threads between \\approx 0.060 0.070
+
+Total compute time for serial calculation: $0.098 s$
+
+Total compute time for parallel calculation: \
+1  thread: $= 0.115$ s\
+2  thread: $= 0.096$ s\
+3  thread: $= 0.082$ s\
+4  thread: $= 0.073$ s\
+5  thread: $= 0.068$ s\
+6  thread: $= 0.062$ s\
+7  thread: $= 0.058$ s\
+8  thread: $= 0.060$ s\
+9  thread: $= 0.063$ s\
+10 thread: $= 0.068$ s\
+10-->20 threads between $\\approx 0.060 - 0.070$ s
 
 With one thread, the `@threads` macro adds setup and waiting overhead, so it’s slower than the plain serial loop. As we increase the thread count, that overhead gets spread out and things speed up—until the program becomes limited by how fast data can be moved to and from memory. At that point (around 5–8 threads, ≈0.06–0.07 s) it plateaus. Beyond that, adding more threads doesn’t help because the memory transfer rate is already maxed out (small timing wiggles can be normal due to scheduling and the mix of P- and E-cores).
 
