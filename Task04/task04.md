@@ -2,44 +2,7 @@
 ```c
 /*
  * Task 04 – Play with discrete math (soluzione in C)
- *
- * Requisiti dalla traccia (riassunto):
- * - f(x) = e^x * cos(x)
- * - INPUT: N (numero di punti), x_inf, x_sup
- * - OUTPUT:
- *     (1) Scrivere un file con N righe e 2 colonne: x   f(x)
- *         (campionamento uniforme in [x_inf, x_sup], estremi inclusi)
- *     (2) Stampare a terminale il valore dell’integrale:
- *             I = ∫_0^{π/2} f(x) dx
- *         con 16 cifre decimali, usando (ad es.) la regola dei trapezi.
- *
- * NOTA IMPORTANTE (richiesta dall’utente):
- * - NON rispondere/affrontare per ora le domande 1) 2) 3) 4) della traccia.
- *
- * COMPILAZIONE:
- *     gcc -O2 -Wall -Wextra -std=c11 task04.c -o task04 -lm
- *
- * ESECUZIONE:
- *   a) Con argomenti da riga di comando:
- *        ./task04 N x_inf x_sup [output_filename]
- *      Esempio:
- *        ./task04 1000 0.0 1.0 fx_samples.txt
- *
- *   b) Interattivo (senza argomenti):
- *        ./task04
- *      Il programma chiede N, x_inf, x_sup e usa "fx_samples.txt" come default.
- *
- * DETTAGLI DI IMPLEMENTAZIONE:
- * - Il campionamento genera N punti uniformemente spaziati su [x_inf, x_sup],
- *   includendo *sempre* x_inf (i=0) e x_sup (i=N-1). Se N=1, scrive un solo punto x_inf,
- *   ma per l’integrale la regola dei trapezi richiede almeno 2 punti: in tal caso
- *   il programma segnala errore.
- * - L’integrale I viene calcolato su [0, π/2] con la regola dei trapezi usando M=N
- *   nodi uniformi (M>=2). Questo collega la “risoluzione numerica” dell’integrale
- *   a N, come spesso si fa nelle esercitazioni. Volendo, si potrebbe svincolare M da N.
- * - Stampa dell’integrale con 16 cifre decimali: printf("%.16f", I).
- * - Si fa uso di double (64 bit) e funzioni di <math.h> (exp, cos).
- */
+ 
 
 #include <stdio.h>    // printf, fprintf, scanf, FILE, fopen, fclose
 #include <stdlib.h>   // strtod, strtoll, EXIT_SUCCESS/EXIT_FAILURE
