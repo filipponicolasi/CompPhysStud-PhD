@@ -187,14 +187,17 @@ Total compute time for parallel calculation: \
 With one thread, the `@threads` macro adds setup and waiting overhead, so it’s slower than the plain serial loop. As we increase the thread count, that overhead gets spread out and things speed up—until the program becomes limited by how fast data can be moved to and from memory. At that point (around 5–8 threads, ≈0.06–0.07 s) it plateaus. Beyond that, adding more threads doesn’t help because the memory transfer rate is already maxed out (small timing wiggles can be normal due to scheduling and the mix of P- and E-cores).
 
 # MPI
+
 In Julia, MPI-based distributed parallelism is provided by the **MPI.jl** package. With MPI you launch P processes of the same program; each process has a rank (an ID from 0 to P−1) and its own private memory.
 
-In our case we use **P = 4** to split the work over $N$ elements. **Rank 0** reads the input vectors `x` and `y`, splits them into contiguous blocks, and sends each block to the corresponding process using **Scatterv** (rank 0 here will also calculate his part). Every process (Rank 0,1,2,3) then computes its local result `d_loc = a * x_loc + y_loc`. Finally, **rank 0** collects all local pieces and reconstructs the global vector `d` using **Gatherv**. As i use a single machine, the 4 processes will use 4 cores, to run the code use the command: `mpirun -np 4 julia --project -t 1 MPI_DAXPY_calculation.jl config_file.yaml`. In this case there is 1 thread choised, but in the sequent code threading is not implemented, so if there is a necessity to use more threads code must be implemented.
+In our case we use P = 4 to split the work over $N$ elements. **Rank 0** reads the input vectors `x` and `y`, splits them into contiguous blocks, and sends each block to the corresponding process using **Scatterv** (rank 0 here will also calculate his part). Every process (Rank 0,1,2,3) then computes its local result `d_loc = a * x_loc + y_loc`. Finally, rank 0 collects all local pieces and reconstructs the global vector `d` using **Gatherv**. Since we run on a single machine, the 4 processes use 4 cores. Run the code with: `mpirun -np 4 julia --project -t 1 MPI_DAXPY_calculation.jl config_file.yaml`. 
+Here each process uses 1 thread; the code does not implement threading inside each process. If you need more parallelism per process, additional threading code would be required.
 
-MPI is not the same as threads: threads share the same memory while with MPI, processes do not share memory and communicate only by sending messages.
+**Note:** MPI is not the same as threads: threads share memory within a process, while MPI processes have separate memory spaces and communicate via message passing.
 
+### MPI_daxpy_calculation.jl
 ```julia
-# MPI_DAXPY_calculation.jl
+# MPI_daxpy_calculation.jl
 
 using YAML
 using MPI
@@ -216,7 +219,7 @@ try # MPI.finalize() will be called in `finally` block ALWAYS
     # --- Read config only on rank 0 ---
     if rank == 0
         if length(ARGS) != 1
-            println("Usage: mpirun -np <P> julia --project -t 1 MPI_DAXPY_calculation.jl <config_file>")
+            println("Usage: mpirun -np <P> julia --project -t 1 MPI_daxpy_calculation.jl <config_file>")
             MPI.Abort(comm, 1)    # abort ALL ranks (if one fails all the others should stop)
         end
         cfg     = YAML.load_file(ARGS[1])
@@ -318,13 +321,13 @@ try # MPI.finalize() will be called in `finally` block ALWAYS
         end
         println("Total_compute_time = $(t_max[]) s")
 
-        # --- Compare MPI result with serial result (if available) ---
+        ##### --- Compare MPI result with serial result (if available) ---
         serial_path = "$(prefix)$(N)_d_serial.dat"
         d_serial = Float64[]
         open(serial_path, "r") do f
             for ln in eachline(f); push!(d_serial, parse(Float64, ln)); end
         end
-        if all(isapprox.(d_serial, d_full, rtol = 1e-12, atol = 0 ))
+        if all(isapprox.(d_serial, d_full, rtol = 1e-12, atol = 0 )) # it woks also with rtol = 0 --> d_serial = d_full
             println("MPI vector and serial vector are the same")
         else
             println("MPI vector and serial vector are not the same")
@@ -334,5 +337,32 @@ try # MPI.finalize() will be called in `finally` block ALWAYS
 finally
     MPI.Finalize()
 end
-
 ```
+### including gather in time cost
+```julia
+..........
+..........
+d_full = rank == 0 ? Vector{Float64}(undef, N) : nothing  # initialize d_full
+MPI.Barrier(comm)  
+    t_local = @elapsed begin
+        for i in 1:local_n
+            d_loc[i] = a * x_loc[i] + y_loc[i]
+        end
+        MPI.Gatherv!(d_loc, rank == 0 ? d_full : nothing, counts32, 0, comm)      #gatherv included in @elapsed
+    end
+    t_max = Ref(t_local)
+    MPI.Allreduce!(t_max, MPI.MAX, comm)
+.........
+```
+
+### Results
+Calculations were performed for $N = 10^{6}$.
+Wall-clock times were measured using `@elapsed`; the reported value is the **maximum across the 4 processes**, computed via `MPI.Allreduce(MPI.MAX)`.
+A second measurement window also included the `Gatherv!` phase that reassembles all `d_loc` segments into the global `d_full`. All the times include not only the arithmetic but also memory allocation and the one-time JIT compilation cost:
+
+- MPI time : 0.032 s  
+- MPI time including gather: 0.059 s
+
+**Compared to the serial time (0.098 s):**
+- Kernel-only: **3.06× faster** (0.032 s vs 0.098 s)
+- Including gather: **1.58× faster** (0.062 s vs 0.098 s)
