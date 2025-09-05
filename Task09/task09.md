@@ -194,26 +194,108 @@ In our case we use **P = 4** to split the work over $N$ elements. **Rank 0** rea
 MPI is not the same as threads: threads share the same memory while with MPI, processes do not share memory and communicate only by sending messages.
 ```julia
 # MPI_DAXPY_calculation.jl
+# Usage:
+#   mpirun -np 4 julia --project -t 1 MPI_DAXPY_calculation.jl config_file.yaml
 
 using YAML
 using MPI
 
-if length(ARGS) != 1
-    println("Usage: julia <program_name> <config_file>")
-    exit(1)
+MPI.Init()
+try
+    # --- MPI basics ---
+    comm  = MPI.COMM_WORLD
+    rank  = MPI.Comm_rank(comm)
+    nproc = MPI.Comm_size(comm)
+
+    # --- Read config only on rank 0 ---
+    N_local = 0
+    a_local = 0.0
+    xpath   = ""
+    ypath   = ""
+    prefix  = ""
+
+    if rank == 0
+        if length(ARGS) != 1
+            println("Usage: mpirun -np <P> julia --project -t 1 MPI_DAXPY_calculation.jl <config_file>")
+            MPI.Abort(comm, 1)
+        end
+        cfg     = YAML.load_file(ARGS[1])
+        N_local = cfg["N"]
+        a_local = cfg["scalar_a"]
+        xpath   = cfg["vector_x_path"]
+        ypath   = cfg["vector_y_path"]
+        prefix  = cfg["prefix_output"]
+    end
+
+    # --- Broadcast scalars to all ranks (functional style) ---
+    N = MPI.bcast(N_local, 0, comm)     # Int on every rank
+    a = MPI.bcast(a_local, 0, comm)     # Float64 on every rank
+
+    # --- Rank 0 reads input vectors; others keep `nothing` as send-buffer ---
+    x_full = nothing
+    y_full = nothing
+    if rank == 0
+        x = Float64[]
+        y = Float64[]
+        open(xpath, "r") do f
+            for ln in eachline(f); push!(x, parse(Float64, ln)); end
+        end
+        open(ypath, "r") do f
+            for ln in eachline(f); push!(y, parse(Float64, ln)); end
+        end
+        if isempty(x) || isempty(y)
+            println("Error: one of the input files is empty")
+            MPI.Abort(comm, 1)
+        end
+        if length(x) != length(y) || length(y) != N
+            println("Error: vectors must have the same length and equal to N")
+            MPI.Abort(comm, 1)
+        end
+        x_full = x
+        y_full = y
+    end
+
+    # --- Block partition (counts) ---
+    base = N ÷ nproc
+    rmd  = N % nproc
+    counts  = [i <= rmd ? base + 1 : base for i in 1:nproc]   # Vector{Int}
+    counts32 = Int32.(counts)                                  # MPI.jl expects Int32
+    local_n = counts[rank + 1]
+
+    # --- Local buffers + Scatterv ---
+    x_loc = Vector{Float64}(undef, local_n)
+    y_loc = Vector{Float64}(undef, local_n)
+    d_loc = Vector{Float64}(undef, local_n)
+
+    # MPI.jl 0.20.x: Scatterv!/Gatherv! take counts (Int32); no displacements arg
+    MPI.Scatterv!(rank == 0 ? x_full : nothing, x_loc, counts32, 0, comm)
+    MPI.Scatterv!(rank == 0 ? y_full : nothing, y_loc, counts32, 0, comm)
+
+    # --- Compute-only timing (global = max over ranks) ---
+    MPI.Barrier(comm)
+    t_local = @elapsed begin
+        @inbounds @simd for i in 1:local_n
+            d_loc[i] = a * x_loc[i] + y_loc[i]
+        end
+    end
+    t_max = Ref(t_local)
+    MPI.Allreduce!(t_max, MPI.MAX, comm)
+
+    # --- Gather result on rank 0 and write to disk ---
+    d_full = rank == 0 ? Vector{Float64}(undef, N) : nothing
+    MPI.Gatherv!(d_loc, rank == 0 ? d_full : nothing, counts32, 0, comm)
+
+    if rank == 0
+        output = "$(prefix)$(N)_d_mpi.dat"
+        open(output, "w") do f
+            for v in d_full
+                println(f, v)
+            end
+        end
+        println("Total_compute_time = $(t_max[]) s")
+    end
+
+finally
+    MPI.Finalize()
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```
