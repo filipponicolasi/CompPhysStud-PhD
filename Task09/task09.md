@@ -117,7 +117,7 @@ using Base.Threads #for multithreading
 
 # Check for correct number of arguments
 if length(ARGS) != 1
-    println("Usage: julia <program_name> <config_file>")
+    println("Usage: julia -t <num_threads> <program_name> <config_file>")
     exit(1)
 end
 
