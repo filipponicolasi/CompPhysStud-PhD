@@ -81,7 +81,7 @@ end
 KBN_sum(vec)  
 ```
 ## Consideration
-No, they are not the same. The simplest for loop does not take into account that there is a loss in information for integers higher than $2^{53}$. So the extrabit in the mantissa for non perfectly definite number (like $10^16 + 1$) are lost and the number is round-off using the round to nearest, ties to even rule (in this case $10^{16} + 1 = 10^{16}$).
+No, they are not the same. The simplest for loop does not take into account that there is a loss in information for integers higher than $2^{53}$. So the extrabit in the mantissa for non perfectly definite number (like $10^{16} + 1$) are lost and the number is round-off using the round to nearest, ties to even rule (in this case $10^{16} + 1 = 10^{16}$).
 
 # b) Code for daxpy mean = 0 std = 1
 ```julia
@@ -119,7 +119,7 @@ end
 ```
 ### Consideration
 I have to test the right run of daxpy operations and i also have to test the if the output is coherent with the statistics.
-It means that i have to create a control function in the daxpy code that compares numerically the output with a test funtion, and i have to test if the output d has $mean \\approx 0$ and standard deviation $std \\approx {a^2 +1}^0.5:
+It means that i have to create a control function in the daxpy code that compares numerically the output with a test funtion, and i have to test if the output d has $mean \\approx 0$ and standard deviation $std \approx (a^2+1)^{0.5}$:
 ```julia
 # --- TEST NUMERICO con axpy! (controllo DAXPY) ---
 using LinearAlgebra
