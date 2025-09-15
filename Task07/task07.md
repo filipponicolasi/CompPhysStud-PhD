@@ -109,6 +109,7 @@ end
        
 
 # --- Caso ERRORE: N del config NON coerente con i file ---
+#Qui metto incoerenza: i file hanno 2 elementi, ma nel config indico 3 → lo script deve fallire (eseguire exit(1)).
 @testset "task3_2.jl - caso errore (exit != 0)" begin
     mktempdir() do dir
         Nfiles = 2          # vettori con 2 elementi
