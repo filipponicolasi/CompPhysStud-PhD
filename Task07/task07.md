@@ -81,6 +81,15 @@ end
             println(f, "vector_y_path: \"$yp\"")
             println(f, "prefix_output: \"$prefix\"")
         end
+#@testset: raggruppa i test con un titolo.
+#mktempdir() do dir ... end: crea una cartella temporanea (auto-pulita a fine blocco).
+#Crea due file vettore x.dat e y.dat con valori noti (0.1 e 7.1) e un config YAML che punta a quei file e imposta a=3.
+#Costruisce un comando per lanciare lo script esterno task3_2.jl passando il file di config:
+#backtick `...` crea un oggetto Cmd.
+#pipeline(..., stdout=devnull, stderr=devnull) silenzia l’output.
+#run(...) esegue il comando e richiede exit code 0 (altrimenti lancia eccezione).
+#Verifica che il programma abbia scritto l’output d.dat, lo legge e controlla che ogni valore sia ~ 3*0.1 + 7.1 = 7.4 (con isapprox).
+
 
         # eseguo il programma originale come processo esterno
         script = abspath(joinpath(@__DIR__, "task3_2.jl"))
