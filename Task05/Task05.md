@@ -45,7 +45,7 @@ println(somma)
 # 0 - 0.5 = -0.5
 ```
 ## 2- Using Xsum package
-Xsum does not make all computations “perfect”; it specifically computes the sum correctly rounded to Float64—that is, the value you would obtain by performing the summation in infinite precision and then rounding to the nearest Float64. Naturally, the library does not actually use infinite-precision arithmetic. Instead, it implements an algorithm known as exact floating-point summation (developed by Radford Neal). The key idea is that, rather than discarding the bits that cannot fit into a Float64, these bits are accumulated in auxiliary structures so that no contribution is lost. In the end, the algorithm reconstructs the exact base-2 sum—as if all additions had been done with arbitrarily large integers—and then rounds it once to the nearest Float64.
+Xsum specifically computes the sum correctly rounded to Float64—that is, the value you would obtain by performing the summation in infinite precision and then rounding to the nearest Float64. Naturally, the library does not actually use infinite-precision arithmetic. Instead, it implements an algorithm known as exact floating-point summation (developed by Radford Neal). The key idea is that, rather than discarding the bits that cannot fit into a Float64, these bits are accumulated in auxiliary structures so that no contribution is lost. In the end, the algorithm reconstructs the exact base-2 sum—as if all additions had been done with arbitrarily large integers—and then rounds it once to the nearest Float64.
 ```julia
 using Xsum
 vec = [1.0, 1.0e16, -1.0e16, -0.5]
