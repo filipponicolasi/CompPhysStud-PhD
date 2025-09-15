@@ -84,8 +84,9 @@ end
  # eseguo il programma originale come processo esterno
         script = abspath(joinpath(@__DIR__, "task3_2.jl"))
         cmd = `julia $script $cfg`
+#Con le backtick crei un oggetto Cmd (un comando di sistema).L’interpolazione $script e $cfg inserisce il path allo script e il path al file di config come argomento: equivale a lanciare da shell
 
-        # deve uscire con exit code 0
+        # deve uscire con exit code 0, altrimenti errore ( qui eseguo il programma, pipeline silenzia l'output in modo che non si veda nulla a schermo)
         run(pipeline(cmd, stdout=devnull, stderr=devnull))
 
         # verifica file di output e valori
