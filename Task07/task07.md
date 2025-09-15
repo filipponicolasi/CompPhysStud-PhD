@@ -50,7 +50,7 @@ end
 #########################
 # TEST per task3_2.jl  #
 #########################
-using Test
+using Test   #Importa il framework di test standard di Julia (modulo Test), da cui arrivano le macro @test, @testset, @test_throws, ecc.
 
 # utilità: scrive un vettore .dat (un numero per riga)
 function write_vector(path::AbstractString, v::AbstractVector{<:Real})
@@ -62,6 +62,7 @@ function write_vector(path::AbstractString, v::AbstractVector{<:Real})
 end
 
 # --- Caso OK: N coerente, vettori coerenti ---
+# @testset: raggruppa i test con un titolo.
 @testset "task3_2.jl - caso OK" begin
     mktempdir() do dir
         N = 4
@@ -122,6 +123,7 @@ end
         cmd = `julia $script $cfg`
 
         # task3_2.jl fa exit(1) -> run deve lanciare ProcessFailedException
+        #@test_throws ProcessFailedException ... controlla proprio che run(...) sollevi quell’eccezione (exit code diverso da 0).
         @test_throws ProcessFailedException run(pipeline(cmd, stdout=devnull, stderr=devnull))
     end
 end
